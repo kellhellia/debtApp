@@ -1,0 +1,67 @@
+@grey: #424954;
+@blue: #72A7BF;
+
+body {
+    background-color: @grey;
+    color: white;
+}
+
+.red {
+    color: red;
+}
+
+.blue {
+    color: darken(@blue, 10%);
+}
+
+// Bootstrap override
+
+.btn {
+    border: none;
+    padding: 5px 30px;
+    width: 100%;
+}
+
+.btn-primary {
+    background-color: @blue;
+
+    &:hover {
+        background-color: darken(@blue, 3%)
+    }
+}
+
+.input-group-addon {
+    background-color: white;
+}
+
+.form-control {
+    border-left: 1px solid #fff;
+}
+
+// Bootstrap override END
+
+.list {
+    font-size: 17px;
+    width: 100%;
+    background-color: white;
+    border-radius: 4px;
+    color: @grey;
+    padding: 25px;
+
+    li {
+        color: @grey;
+        margin-bottom: 15px;
+    }
+
+    &__item {
+        border-bottom: 1px solid @grey;
+        width: 80%;
+        display: block;
+    }
+
+    &__icon {
+        padding-top: 5px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+}

@@ -1,0 +1,49 @@
+body {
+  background-color: #424954;
+  color: white;
+}
+.red {
+  color: red;
+}
+.blue {
+  color: #4f91af;
+}
+.btn {
+  border: none;
+  padding: 5px 30px;
+  width: 100%;
+}
+.btn-primary {
+  background-color: #72A7BF;
+}
+.btn-primary:hover {
+  background-color: #67a0ba;
+}
+.input-group-addon {
+  background-color: white;
+}
+.form-control {
+  border-left: 1px solid #fff;
+}
+.list {
+  font-size: 17px;
+  width: 100%;
+  background-color: white;
+  border-radius: 4px;
+  color: #424954;
+  padding: 25px;
+}
+.list li {
+  color: #424954;
+  margin-bottom: 15px;
+}
+.list__item {
+  border-bottom: 1px solid #424954;
+  width: 80%;
+  display: block;
+}
+.list__icon {
+  padding-top: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+}
