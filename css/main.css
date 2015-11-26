@@ -39,8 +39,6 @@ body {
 }
 .list__item {
   border-bottom: 1px solid #424954;
-  width: 80%;
-  display: block;
 }
 .list__icon {
   padding-top: 5px;
