@@ -58,6 +58,7 @@ class App extends React.Component {
         let numberExpr = /^[0-9]*$/g;
 
         if (((credit.toString())).match(numberExpr)) {
+
             let totalGuysCredit = +credit + +this.state.totalGuysCredit;
 
             this.setState({totalGuysCredit});
@@ -80,6 +81,7 @@ class App extends React.Component {
             // clear our inputs
 
             this.refs.credit.value = null;
+            this.refs.description.value = null;
             this.refs.name.value = null;
         } else {
             // set alert
