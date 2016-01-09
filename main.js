@@ -12,26 +12,14 @@ class App extends React.Component {
     componentDidMount() {
         let ls = localStorage;
         let guysCredits = JSON.parse(ls.getItem("list"));
-        let sumArr = [];
+        console.log(guysCredits);
 
         if (!guysCredits || guysCredits.length === 0) {
             let arr = [];
-            sumArr = ["0"];
             ls.setItem("list", JSON.stringify(arr));
-            ls.setItem("totalGuysCredit", JSON.stringify(sumArr));
-
-            this.setState({totalGuysCredit: sumArr});
         } else if (guysCredits) {
-            _.each(guysCredits, (n, index) => {
-                sumArr.push(+n.credit);
-            });
-
-            let totalGuysCredit = _.reduce(sumArr, (total, n) => {
-                return total + n;
-            });
-
-            this.setState({guysCredits, totalGuysCredit}, () => {
-                console.log(this.state);
+            this.setState({guysCredits}, () => {
+                console.log('did mount state: ', this.state.guysCredits);
             });
         }
     }
@@ -43,48 +31,39 @@ class App extends React.Component {
     handleAddCredit(e) {
         e.preventDefault();
 
-        //get data from localStorage and inputs
-
         let ls = localStorage;
-
         let list = JSON.parse(ls.getItem("list"));
 
         let name = this.refs.name.value;
         let description = this.refs.description.value;
         let credit = this.refs.credit.value;
 
-        // calculate value of total credit
-
         let numberExpr = /^[0-9]*$/g;
 
         if (((credit.toString())).match(numberExpr)) {
-            let totalGuysCredit = +credit + +this.state.totalGuysCredit;
+            let userObject = _.find(list, function(n) {
+                 return n.name === name;
+            });
 
-            this.setState({totalGuysCredit});
+            if (userObject !== undefined) {
+                let userDebsArray = userObject.debs;
+                userDebsArray.push(credit);
+            } else {
+                let el = {
+                    name,
+                    debs: []
+                };
 
-            //set item to localStorage and state
+                el.debs.push([{credit, description}]);
+                console.log(list);
+                list.push(el);
+                console.log(list);
+                ls.setItem("list", JSON.stringify(list));
 
-            let el = {
-                name,
-                description,
-                credit
+                this.refs.name.value = null;
+                this.refs.description.value = null;
+                this.refs.credit.value = null;
             }
-
-            list.push(el);
-
-            ls.setItem("list", JSON.stringify(list));
-            let guysCredits = this.state.guysCredits;
-            guysCredits.push(el);
-            this.setState({guysCredits});
-
-            // clear our inputs
-
-            this.refs.credit.value = null;
-            this.refs.name.value = null;
-        } else {
-            // set alert
-
-            this.setState({alert});
         }
     }
 
@@ -98,16 +77,13 @@ class App extends React.Component {
 
         this.setState({guysCredits: filteredList});
         ls.setItem("list", JSON.stringify(filteredList));
-
-        let totalGuysCredit = this.state.totalGuysCredit - user.credit;
-        this.setState({totalGuysCredit});
     }
 
     render() {
         let ls = localStorage;
         let lsList = JSON.parse(ls.getItem("list"));
 
-        let guysList = _.map(this.state.guysCredits, (n, index) => {
+        let guysList = _.map(lsList, (n, index) => {
             return <li className="clearfix" key={index}>
                       <div className="list__item">
                           <div className="row">
@@ -122,21 +98,20 @@ class App extends React.Component {
                           </div>
                           <div className="row">
                              <div className="col-xs-12">
-                                {n.credit} - {n.description}
+                                {n.debs}
                              </div>
                           </div>
                       </div>
                    </li>;
         });
 
-        let list = (this.state.guysCredits.length !== 0) ? '' : "Please, add new debt :)";
-        let alert = this.state.alert ? <div className="alert alert-danger" role="alert">Please, enter number in dollar input</div> : "";
+        // let list = (this.state.guysCredits.length !== 0) ? '' : "Please, add new debt :)";
+        // let alert = this.state.alert ? <div className="alert alert-danger" role="alert">Please, enter number in dollar input</div> : "";
 
         return (
             <div className="container">
-                <h2 className="text-center">Total credit: {this.state.totalGuysCredit}</h2>
-
                 <div className="row">
+                    <h2 className="text-center">Lolik</h2>
                     <div className="col-xs-6 col-xs-offset-3">
                         <form onSubmit={this.handleAddCredit.bind(this)}>
 
@@ -179,8 +154,6 @@ class App extends React.Component {
                                           required
                                       />
                                     </div>
-
-                                    {alert}
                                 </div>
                             </div>
 
@@ -196,7 +169,6 @@ class App extends React.Component {
                                 <h3>Debtors</h3>
 
                                 <ul className="list list-unstyled">
-                                    {list}
                                     {guysList}
                                 </ul>
                             </div>
