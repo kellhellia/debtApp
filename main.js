@@ -12,27 +12,12 @@ class App extends React.Component {
     componentDidMount() {
         let ls = localStorage;
         let guysCredits = JSON.parse(ls.getItem("list"));
-        let sumArr = [];
 
         if (!guysCredits || guysCredits.length === 0) {
             let arr = [];
-            sumArr = ["0"];
             ls.setItem("list", JSON.stringify(arr));
-            ls.setItem("totalGuysCredit", JSON.stringify(sumArr));
-
-            this.setState({totalGuysCredit: sumArr});
         } else if (guysCredits) {
-            _.each(guysCredits, (n, index) => {
-                sumArr.push(+n.credit);
-            });
-
-            let totalGuysCredit = _.reduce(sumArr, (total, n) => {
-                return total + n;
-            });
-
-            this.setState({guysCredits, totalGuysCredit}, () => {
-                console.log(this.state);
-            });
+            this.setState({guysCredits});
         }
     }
 
@@ -43,88 +28,99 @@ class App extends React.Component {
     handleAddCredit(e) {
         e.preventDefault();
 
-        //get data from localStorage and inputs
-
         let ls = localStorage;
-
         let list = JSON.parse(ls.getItem("list"));
 
         let name = this.refs.name.value;
         let description = this.refs.description.value;
         let credit = this.refs.credit.value;
 
-        // calculate value of total credit
-
         let numberExpr = /^[0-9]*$/g;
 
         if (((credit.toString())).match(numberExpr)) {
+            let userObject = _.find(list, (n) => {
+                 return n.name === name;
+            });
 
-            let totalGuysCredit = +credit + +this.state.totalGuysCredit;
+            let index = _.findIndex(list, (n) => {
+                return n.name === name;
+            });
 
-            this.setState({totalGuysCredit});
+            if (userObject !== undefined) {
+                let newUser = userObject;
+                newUser.debs.push({"debt":credit, "description" : description});
+                list.splice(index, 1, newUser);
+                ls.setItem("list", JSON.stringify(list));
+                this.setState({"guysCredits" : list});
+            } else {
+                let el = {
+                    name,
+                    debs: []
+                };
 
-            //set item to localStorage and state
-
-            let el = {
-                name,
-                description,
-                credit
+                el.debs.push({"debt" : credit, "description" : description});
+                list.push(el);
+                ls.setItem("list", JSON.stringify(list));
+                this.setState({"guysCredits" : list});
             }
 
-            list.push(el);
-
-            ls.setItem("list", JSON.stringify(list));
-            let guysCredits = this.state.guysCredits;
-            guysCredits.push(el);
-            this.setState({guysCredits});
-
-            // clear our inputs
-
-            this.refs.credit.value = null;
-            this.refs.description.value = null;
             this.refs.name.value = null;
+            this.refs.description.value = null;
+            this.refs.credit.value = null;
         } else {
-            // set alert
-
             this.setState({alert});
         }
     }
 
-    handleDelete(user) {
+    handleDelete(user, debt) {
         let ls = localStorage;
         let list = this.state.guysCredits;
 
-        let filteredList = _.filter(list, (n) => {
-            return n.name !== user.name;
+        let indexDebs = _.findIndex(user.debs, (n) => {
+            return n.debt === debt.debt;
         });
 
-        this.setState({guysCredits: filteredList});
-        ls.setItem("list", JSON.stringify(filteredList));
+        user.debs.splice(indexDebs, 1);
 
-        let totalGuysCredit = this.state.totalGuysCredit - user.credit;
-        this.setState({totalGuysCredit});
+        let indexUser = _.findIndex(list, (n) => {
+            return n.name === user.name;
+        });
+
+        list.splice(indexUser, 1, user);
+
+        if (user.debs.length === 0) {
+            list = _.filter(list, (n) => {
+                return n.name !== user.name;
+            });
+        };
+
+        this.setState({guysCredits: list});
+        ls.setItem("list", JSON.stringify(list));
     }
 
     render() {
-        let ls = localStorage;
-        let lsList = JSON.parse(ls.getItem("list"));
+        let lsList = this.state.guysCredits;
 
-        let guysList = _.map(this.state.guysCredits, (n, index) => {
+        let guysList = _.map(lsList, (n, index) => {
+            let credits = _.map(n.debs, (m, key) => {
+                return <div className="row" key={key}>
+                    <div className="col-xs-6">{m.debt} - {m.description}</div>
+                     <div className="col-xs-6 text-right">
+                        <i onClick={this.handleDelete.bind(this, n, m)} className="list__icon red glyphicon glyphicon-remove"></i>
+                      </div>
+                </div>;
+            });
+
             return <li className="clearfix" key={index}>
                       <div className="list__item">
                           <div className="row">
                              <div className="col-xs-6">
                                 {n.name}
                              </div>
-
-                             <div className="col-xs-6 text-right">
-                                <i className="list__icon blue glyphicon glyphicon-pencil"></i>
-                                <i onClick={this.handleDelete.bind(this, n)} className="list__icon red glyphicon glyphicon-remove"></i>
-                              </div>
                           </div>
                           <div className="row">
                              <div className="col-xs-12">
-                                {n.credit} - {n.description}
+                                {credits}
                              </div>
                           </div>
                       </div>
@@ -132,13 +128,12 @@ class App extends React.Component {
         });
 
         let list = (this.state.guysCredits.length !== 0) ? '' : "Please, add new debt :)";
-        let alert = this.state.alert ? <div className="alert alert-danger" role="alert">Please, enter number in dollar input</div> : "";
+        let alert = this.state.alert ? <div className="alert alert-danger" role="alert">Please, enter a valid number</div> : "";
 
         return (
             <div className="container">
-                <h2 className="text-center">Total credit: {this.state.totalGuysCredit}</h2>
-
                 <div className="row">
+                    <h2 className="text-center">Total credit: </h2>
                     <div className="col-xs-6 col-xs-offset-3">
                         <form onSubmit={this.handleAddCredit.bind(this)}>
 
@@ -181,14 +176,13 @@ class App extends React.Component {
                                           required
                                       />
                                     </div>
-
-                                    {alert}
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="col-xs-8 col-xs-offset-2">
                                     <button type="submit" className="btn btn-primary center-block">Add new debt</button>
+                                    {alert}
                                 </div>
                             </div>
                         </form>
@@ -198,15 +192,15 @@ class App extends React.Component {
                                 <h3>Debtors</h3>
 
                                 <ul className="list list-unstyled">
-                                    {list}
                                     {guysList}
+                                    {list}
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 }
 
