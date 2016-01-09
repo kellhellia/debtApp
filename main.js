@@ -12,15 +12,12 @@ class App extends React.Component {
     componentDidMount() {
         let ls = localStorage;
         let guysCredits = JSON.parse(ls.getItem("list"));
-        console.log(guysCredits);
 
         if (!guysCredits || guysCredits.length === 0) {
             let arr = [];
             ls.setItem("list", JSON.stringify(arr));
         } else if (guysCredits) {
-            this.setState({guysCredits}, () => {
-                console.log('did mount state: ', this.state.guysCredits);
-            });
+            this.setState({guysCredits});
         }
     }
 
@@ -41,7 +38,7 @@ class App extends React.Component {
         let numberExpr = /^[0-9]*$/g;
 
         if (((credit.toString())).match(numberExpr)) {
-            let userObject = _.find(list, function(n) {
+            let userObject = _.find(list, (n) => {
                  return n.name === name;
             });
 
@@ -50,61 +47,74 @@ class App extends React.Component {
             });
 
             if (userObject !== undefined) {
-                var newUser = userObject;
-                newUser.debs.push([credit, description]);
+                let newUser = userObject;
+                newUser.debs.push({"debt":credit, "description" : description});
                 list.splice(index, 1, newUser);
-                list.push(newUser);
                 ls.setItem("list", JSON.stringify(list));
+                this.setState({"guysCredits" : list});
             } else {
                 let el = {
                     name,
                     debs: []
                 };
 
-                el.debs.push([credit, description]);
+                el.debs.push({"debt" : credit, "description" : description});
                 list.push(el);
                 ls.setItem("list", JSON.stringify(list));
-
-                this.refs.name.value = null;
-                this.refs.description.value = null;
-                this.refs.credit.value = null;
+                this.setState({"guysCredits" : list});
             }
+
+            this.refs.name.value = null;
+            this.refs.description.value = null;
+            this.refs.credit.value = null;
         }
     }
 
-    handleDelete(user) {
+    handleDelete(user, debt) {
         let ls = localStorage;
         let list = this.state.guysCredits;
 
-        let filteredList = _.filter(list, (n) => {
-            return n.name !== user.name;
+        let indexDebs = _.findIndex(user.debs, (n) => {
+            return n.debt === debt.debt;
         });
 
-        this.setState({guysCredits: filteredList});
-        ls.setItem("list", JSON.stringify(filteredList));
+        user.debs.splice(indexDebs, 1);
+
+        let indexUser = _.findIndex(list, (n) => {
+            return n.name === user.name;
+        });
+
+        console.log(indexUser);
+
+        list.splice(indexUser, 1, user);
+
+        this.setState({guysCredits: list});
+        ls.setItem("list", JSON.stringify(list));
     }
 
     render() {
-        let ls = localStorage;
-        let lsList = JSON.parse(ls.getItem("list"));
+        let lsList = this.state.guysCredits;
 
         let guysList = _.map(lsList, (n, index) => {
+            let debitoors = _.map(n.debs, (m, key) => {
+                return <div className="row" key={key}>
+                    <div className="col-xs-6">{m.debt} - {m.description}</div>
+                     <div className="col-xs-6 text-right">
+                        <i onClick={this.handleDelete.bind(this, n, m)} className="list__icon red glyphicon glyphicon-remove"></i>
+                      </div>
+                </div>;
+            });
+
             return <li className="clearfix" key={index}>
                       <div className="list__item">
                           <div className="row">
                              <div className="col-xs-6">
                                 {n.name}
                              </div>
-
-                             <div className="col-xs-6 text-right">
-                                <i className="list__icon blue glyphicon glyphicon-pencil"></i>
-                                <i onClick={this.handleDelete.bind(this, n)} className="list__icon red glyphicon glyphicon-remove"></i>
-                              </div>
                           </div>
                           <div className="row">
                              <div className="col-xs-12">
-                                {n.debs.credit}
-                                {n.debs.description}
+                                {debitoors}
                              </div>
                           </div>
                       </div>
@@ -182,7 +192,7 @@ class App extends React.Component {
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 }
 
