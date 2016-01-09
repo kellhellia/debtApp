@@ -45,19 +45,24 @@ class App extends React.Component {
                  return n.name === name;
             });
 
+            let index = _.findIndex(list, (n) => {
+                return n.name === name;
+            });
+
             if (userObject !== undefined) {
-                let userDebsArray = userObject.debs;
-                userDebsArray.push(credit);
+                var newUser = userObject;
+                newUser.debs.push([credit, description]);
+                list.splice(index, 1, newUser);
+                list.push(newUser);
+                ls.setItem("list", JSON.stringify(list));
             } else {
                 let el = {
                     name,
                     debs: []
                 };
 
-                el.debs.push([{credit, description}]);
-                console.log(list);
+                el.debs.push([credit, description]);
                 list.push(el);
-                console.log(list);
                 ls.setItem("list", JSON.stringify(list));
 
                 this.refs.name.value = null;
@@ -98,7 +103,8 @@ class App extends React.Component {
                           </div>
                           <div className="row">
                              <div className="col-xs-12">
-                                {n.debs}
+                                {n.debs.credit}
+                                {n.debs.description}
                              </div>
                           </div>
                       </div>
