@@ -67,6 +67,8 @@ class App extends React.Component {
             this.refs.name.value = null;
             this.refs.description.value = null;
             this.refs.credit.value = null;
+        } else {
+            this.setState({alert});
         }
     }
 
@@ -84,9 +86,13 @@ class App extends React.Component {
             return n.name === user.name;
         });
 
-        console.log(indexUser);
-
         list.splice(indexUser, 1, user);
+
+        if (user.debs.length === 0) {
+            list = _.filter(list, (n) => {
+                return n.name !== user.name;
+            });
+        };
 
         this.setState({guysCredits: list});
         ls.setItem("list", JSON.stringify(list));
@@ -96,7 +102,7 @@ class App extends React.Component {
         let lsList = this.state.guysCredits;
 
         let guysList = _.map(lsList, (n, index) => {
-            let debitoors = _.map(n.debs, (m, key) => {
+            let credits = _.map(n.debs, (m, key) => {
                 return <div className="row" key={key}>
                     <div className="col-xs-6">{m.debt} - {m.description}</div>
                      <div className="col-xs-6 text-right">
@@ -114,20 +120,20 @@ class App extends React.Component {
                           </div>
                           <div className="row">
                              <div className="col-xs-12">
-                                {debitoors}
+                                {credits}
                              </div>
                           </div>
                       </div>
                    </li>;
         });
 
-        // let list = (this.state.guysCredits.length !== 0) ? '' : "Please, add new debt :)";
-        // let alert = this.state.alert ? <div className="alert alert-danger" role="alert">Please, enter number in dollar input</div> : "";
+        let list = (this.state.guysCredits.length !== 0) ? '' : "Please, add new debt :)";
+        let alert = this.state.alert ? <div className="alert alert-danger" role="alert">Please, enter a valid number</div> : "";
 
         return (
             <div className="container">
                 <div className="row">
-                    <h2 className="text-center">Lolik</h2>
+                    <h2 className="text-center">Total credit: </h2>
                     <div className="col-xs-6 col-xs-offset-3">
                         <form onSubmit={this.handleAddCredit.bind(this)}>
 
@@ -176,6 +182,7 @@ class App extends React.Component {
                             <div className="row">
                                 <div className="col-xs-8 col-xs-offset-2">
                                     <button type="submit" className="btn btn-primary center-block">Add new debt</button>
+                                    {alert}
                                 </div>
                             </div>
                         </form>
@@ -186,6 +193,7 @@ class App extends React.Component {
 
                                 <ul className="list list-unstyled">
                                     {guysList}
+                                    {list}
                                 </ul>
                             </div>
                         </div>
