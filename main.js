@@ -2,9 +2,8 @@ class App extends React.Component {
     constructor() {
         super();
         this.state = {
-            myCredits: [],
             guysCredits: [],
-            totalGuysCredit: null,
+            totalGuysCredits: null,
             alert: false
         };
     }
@@ -17,7 +16,18 @@ class App extends React.Component {
             let arr = [];
             ls.setItem("list", JSON.stringify(arr));
         } else if (guysCredits) {
-            this.setState({guysCredits});
+
+            let guysTotalCredits = [];
+
+            _.map(guysCredits, (n) => {
+                _.map(n.debs, (m) => {
+                    guysTotalCredits.push(+m.debt);
+                });
+            });
+
+            let totalSum = _.sum(guysTotalCredits);
+
+            this.setState({guysCredits, guysTotalCredits: totalSum});
         }
     }
 
@@ -51,7 +61,7 @@ class App extends React.Component {
                 newUser.debs.push({"debt":credit, "description" : description});
                 list.splice(index, 1, newUser);
                 ls.setItem("list", JSON.stringify(list));
-                this.setState({"guysCredits" : list});
+                this.setState({"guysCredits" : list, guysTotalCredits});
             } else {
                 let el = {
                     name,
@@ -63,6 +73,9 @@ class App extends React.Component {
                 ls.setItem("list", JSON.stringify(list));
                 this.setState({"guysCredits" : list});
             }
+
+            let guysTotalCredits = +this.state.guysTotalCredits + +credit;
+            this.setState({guysTotalCredits});
 
             this.refs.name.value = null;
             this.refs.description.value = null;
@@ -94,7 +107,11 @@ class App extends React.Component {
             });
         };
 
-        this.setState({guysCredits: list});
+        console.log(debt.debt);
+
+        let guysTotalCredits = +this.state.guysTotalCredits - +debt.debt;
+
+        this.setState({guysCredits: list, guysTotalCredits});
         ls.setItem("list", JSON.stringify(list));
     }
 
@@ -133,12 +150,13 @@ class App extends React.Component {
         return (
             <div className="container">
                 <div className="row">
-                    <h2 className="text-center">Total credit: </h2>
+                    <h2 className="text-center">myCredits</h2>
                     <div className="col-xs-6 col-xs-offset-3">
                         <form onSubmit={this.handleAddCredit.bind(this)}>
 
                             <div className="row">
                                 <div className="col-xs-8 col-xs-offset-2">
+                                    <h3>Add new credit</h3>
                                     <div className="input-group form-group">
                                       <span className="input-group-addon">
                                         <i className="glyphicon glyphicon-user" />
@@ -194,6 +212,7 @@ class App extends React.Component {
                                 <ul className="list list-unstyled">
                                     {guysList}
                                     {list}
+                                    <p>Total debt: {this.state.guysTotalCredits}</p>
                                 </ul>
                             </div>
                         </div>
